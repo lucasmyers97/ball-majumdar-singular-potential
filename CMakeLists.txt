@@ -12,5 +12,7 @@ set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type")
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+
 # library source code
-# add_subdirectory(src)
+add_subdirectory(src)
