@@ -16,3 +16,6 @@ find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 # library source code
 add_subdirectory(src)
+
+# examples for how to use the library
+add_subdirectory(examples)
