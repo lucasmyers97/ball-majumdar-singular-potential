@@ -1,2 +1,6 @@
 build/**
-.*/**
+
+.*
+!.gitignore
+
+compile_commands.json
