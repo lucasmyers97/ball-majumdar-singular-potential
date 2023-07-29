@@ -12,7 +12,9 @@ set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type")
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+# have eigen installed as submodule, header only
+add_library(Eigen INTERFACE)
+target_include_directories(Eigen INTERFACE ${CMAKE_SOURCE_DIR}/eigen)
 
 # library source code
 add_subdirectory(src)
