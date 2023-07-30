@@ -1,0 +1,2 @@
+add_library(Q_tensor_shape INTERFACE)
+target_include_directories(Q_tensor_shape INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
