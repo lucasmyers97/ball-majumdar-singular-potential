@@ -13,8 +13,15 @@ target_link_libraries(lebedev_quadrature_test
     PRIVATE
     lebedev_quadrature)
 
+add_executable(singular_potential_test singular_potential_test.cpp)
+target_link_libraries(singular_potential_test
+    PRIVATE
+    singular_potential
+    Q_tensor_shape)
+
 install(TARGETS
     matrix_inversion
     print_Q_tensor_shape
     lebedev_quadrature_test
+    singular_potential_test
     DESTINATION bin/examples)
