@@ -16,6 +16,10 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_library(Eigen INTERFACE)
 target_include_directories(Eigen INTERFACE ${CMAKE_SOURCE_DIR}/eigen)
 
+# have lebedev-quadrature installed as submodule, header only
+add_library(lebedev_quadrature INTERFACE)
+target_include_directories(lebedev_quadrature INTERFACE ${CMAKE_SOURCE_DIR}/lebedev-quadrature/src)
+
 # library source code
 add_subdirectory(src)
 
