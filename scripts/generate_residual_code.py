@@ -185,22 +185,27 @@ def main():
     monomial_list_4 = make_monomial_list(4)
 
     # Print unique monomials
-    for coord_power in monomial_list_4:
-        print( '{}{}{}'.format('x'*coord_power[0],
-                               'y'*coord_power[1],
-                               'z'*coord_power[2]) )
+    print('Ordering or monomials is:', end='\n\n')
     for coord_power in monomial_list_2:
         print( '{}{}{}'.format('x'*coord_power[0],
                                'y'*coord_power[1],
                                'z'*coord_power[2]) )
+    for coord_power in monomial_list_4:
+        print( '{}{}{}'.format('x'*coord_power[0],
+                               'y'*coord_power[1],
+                               'z'*coord_power[2]) )
+    print(end='\n\n')
 
     # Print code to calculate integral expressions
-    for i in range(len(monomial_list_4)):
-        print(integral_expressions(i, monomial_list_4))
+    print('Monomial integral code is:', end='\n\n')
     for i in range(len(monomial_list_2)):
         print(integral_expressions(i, monomial_list_2))
+    for i in range(len(monomial_list_4)):
+        print(integral_expressions(i, monomial_list_4))
+    print(end='\n\n')
 
     # Print code to calculate residual and Jacobian
+    print('Residual code is:', end='\n\n')
     for i in range(5):
         print( residual_expression(i, monomial_list_2) )
     for i in range(5):
