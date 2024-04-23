@@ -126,3 +126,23 @@ For the diagonal elements we get:
 where here $z$ is the coordinate, not the partition function.
 For this we have to do 3 classes of integrals: One whose integrand is just the exponential (one integral), the exponential multiplied by second degree monomials (six integrals), and the exponential multiplied by fourth degree monomials (15 integrals).
 In the code, we carry these integrals out simultaneously and then construct the residual and Jacobian at the end.
+The first is just $Z$ the partition function, we call the second `I2` and the third `I4` ("Integral" + the degree of monomial).
+These are handled as arrays whose indices correspond to the following monomial order:
+
+| Index         | Degree 4 monomial     | Degree 2 monomial |
+|---------------|-----------------------|-------------------|
+| 0             | xxxx                  | xx
+| 1             | xxxy                  | xy
+| 2             | xxyy                  | yy
+| 3             | xyyy                  | xz
+| 4             | yyyy                  | yz
+| 5             | xxxz                  | zz
+| 6             | xxyz                  |
+| 7             | xyyz                  |
+| 8             | yyyz                  |
+| 9             | xxzz                  |
+| 10            | xyzz                  |
+| 11            | yyzz                  |
+| 12            | xzzz                  |
+| 13            | yzzz                  |
+| 14            | zzzz                  |
