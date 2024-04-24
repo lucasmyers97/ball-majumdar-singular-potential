@@ -3,6 +3,8 @@
 
 #include "Q_tensor_shape.hpp"
 
+#include <cmath>
+
 #include <Eigen/Dense>
 #include <lebedev_quadrature.hpp>
 
@@ -27,27 +29,14 @@ public:
                       const unsigned int maximum_iterations);
 
     unsigned int invert_Q(const vec &Q_in);
-    double returnZ() const;
-    void returnLambda(vec &outLambda) const;
-    void returnJac(mat &outJac);
+    double return_Z() const;
+    vec return_Lambda() const;
+    mat return_Jacobian() const;
 
 private:
     void initializeInversion(const vec &Q_in);
     void updateResJac();
     void updateVariation();
-
-    double lambdaSum(const point &x) const;
-    double calcInt1Term(const double exp_lambda,
-                        const int quad_idx, const int i_m, const int j_m) const;
-    double calcInt2Term(const double exp_lambda,
-                        const int quad_idx, const int i_m, const int j_m,
-                        const int i_n, const int j_n) const;
-    double calcInt3Term(const double exp_lambda,
-                        const int quad_idx,
-                        const int i_m, const int j_m,
-                        const int i_n, const int j_n) const;
-    double calcInt4Term(const double exp_lambda,
-                        const int quad_idx, const int i_m, const int j_m) const;
 
     const double damping_parameter;
     const double tolerance;
@@ -56,6 +45,8 @@ private:
     bool inverted = false;
     bool Jac_updated = false;
 
+    vec delta_vec = {1, 1, 0, 0, 0};
+    vec m;
     vec Q;
     vec Lambda;
 
@@ -64,15 +55,16 @@ private:
     vec dLambda;
     double Z = 0;
 
-    using int_vec = std::array<double, QTensorShape<dim>::n_degrees_of_freedom>;
-    using int_mat = std::array<int_vec, QTensorShape<dim>::n_degrees_of_freedom>;
-
-    int_vec int1 = {0};
-    int_mat int2 = {{0}};
-    int_mat int3 = {{0}};
-    int_vec int4 = {0};
+    double exp_lambda;
+    std::array<double, 6> I2 = {0};
+    std::array<double, 15> I4 = {0};
 
     lebedev::QuadraturePoints quadrature_points;
+
+    const std::vector<double> &x;
+    const std::vector<double> &y;
+    const std::vector<double> &z;
+    const std::vector<double> &w;
 };
 
 } // ball_majumdar_singular_potential
