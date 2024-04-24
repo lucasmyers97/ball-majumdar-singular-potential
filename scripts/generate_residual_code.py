@@ -105,7 +105,7 @@ def residual_expression(m, monomial_list_2):
 
     integral_idx = monomial_list_2.index( monomial )
 
-    return 'Res({}) = 1 / Z * I2[{}] - m({}, {});'.format(m, integral_idx, i, j)
+    return 'Res({}) = 1 / Z * I2[{}] - m({});'.format(m, integral_idx, m)
 
 
 
