@@ -1,0 +1,7 @@
+#ifndef SINGULAR_POTENTIAL_IMPLEMENTATION_HPP
+#define SINGULAR_POTENTIAL_IMPLEMENTATION_HPP
+
+#define SINGULAR_POTENTIAL_HEADER_ONLY 0
+#include "ball_majumdar_singular_potential.hpp"
+
+#endif

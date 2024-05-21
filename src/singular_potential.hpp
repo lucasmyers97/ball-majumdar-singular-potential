@@ -1,12 +1,13 @@
 #ifndef SINGULAR_POTENTIAL_HPP
 #define SINGULAR_POTENTIAL_HPP
 
+#include "preprocessor.hpp"
 #include "Q_tensor_shape.hpp"
 
 #include <cmath>
 
-#include <Eigen/Dense>
-#include <lebedev_quadrature.hpp>
+#include "../eigen/Eigen/Dense"
+#include "../lebedev-quadrature/src/lebedev_quadrature.hpp"
 
 namespace ball_majumdar_singular_potential
 {
@@ -46,6 +47,7 @@ private:
     bool Jac_updated = false;
 
     vec delta_vec = {1, 1, 0, 0, 0};
+    // vec delta_vec = QTensorShape<dim>::delta_vec;
     vec m;
     vec Q;
     vec Lambda;
@@ -55,7 +57,7 @@ private:
     vec dLambda;
     double Z = 0;
 
-    double exp_lambda;
+    double exp_lambda = 0;
     std::array<double, 6> I2 = {0};
     std::array<double, 15> I4 = {0};
 

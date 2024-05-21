@@ -1,4 +1,4 @@
-#include <lebedev_quadrature.hpp>
+#include "../lebedev-quadrature/src/lebedev_quadrature.hpp"
 
 #include <iostream>
 #include <cmath>

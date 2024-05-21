@@ -1,9 +1,10 @@
+#include "preprocessor.hpp"
 #include "singular_potential.hpp"
 
 #include "Q_tensor_shape.hpp"
 
-#include <lebedev_quadrature.hpp>
-#include <Eigen/Dense>
+#include "../eigen/Eigen/Dense"
+#include "../lebedev-quadrature/src/lebedev_quadrature.hpp"
 
 #include <cmath>
 #include <stdexcept>
@@ -12,6 +13,7 @@ namespace ball_majumdar_singular_potential
 {
 
 template <NematicDimension dim>
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 SingularPotential<dim>::
 SingularPotential(const unsigned int lebedev_order,
                   const double damping_parameter,
@@ -33,6 +35,7 @@ SingularPotential(const unsigned int lebedev_order,
 
 
 template <NematicDimension dim>
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 Eigen::Vector<double, QTensorShape<dim>::n_degrees_of_freedom>
 SingularPotential<dim>::
 return_Lambda() const
@@ -43,6 +46,7 @@ return_Lambda() const
 
 
 template <NematicDimension dim>
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 Eigen::Matrix<double, 
               QTensorShape<dim>::n_degrees_of_freedom,
               QTensorShape<dim>::n_degrees_of_freedom>
@@ -55,6 +59,7 @@ return_Jacobian() const
 
 
 template <NematicDimension dim>
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 double SingularPotential<dim>::
 return_Z() const
 {
@@ -64,6 +69,7 @@ return_Z() const
 
 
 template <NematicDimension dim>
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 unsigned int SingularPotential<dim>::
 invert_Q(const Eigen::Vector<double, QTensorShape<dim>::n_degrees_of_freedom> &Q_in)
 {
@@ -202,5 +208,9 @@ updateVariation()
     dLambda = Jac.householderQr().solve(Res);
     Jac_updated = false; // Can't use Jac when it's factorized
 }
+
+// template class SingularPotential<NematicDimension::full_2D>;
+// template class SingularPotential<NematicDimension::quasi_2D>;
+template class SingularPotential<NematicDimension::full_3D>;
 
 } // ball_majumdar_singular_potential

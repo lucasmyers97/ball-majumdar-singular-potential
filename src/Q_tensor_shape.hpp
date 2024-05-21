@@ -1,6 +1,8 @@
 #ifndef Q_TENSOR_SHAPE_HPP
 #define Q_TENSOR_SHAPE_HPP
 
+#include "preprocessor.hpp"
+
 #include <array>
 
 namespace ball_majumdar_singular_potential

@@ -1,4 +1,4 @@
-#include "ball_majumdar_singular_potential.hpp"
+#include "singular_potential_implementation.hpp"
 
 #include <iostream>
 
