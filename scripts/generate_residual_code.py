@@ -5,11 +5,25 @@ residual and Jacobian of the singular potential inversion.
 First, it writes the code to calculate each of the degree 4 and degree 2
 monomial integ
 """
+import argparse
 
 # the kth index of these vectors represents the row and column position
 # respectively of the kth degree of freedom of traceless, symmetric tensors
 i_idx = [0, 1, 0, 0, 1]
 j_idx = [0, 1, 1, 2, 2]
+
+def get_commandline_args():
+
+    desc = '''Generates C++ code necessary to numerically evaluate residual 
+    and Jacobian for singular potential inversion.'''
+
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('--dim',
+                        choices=['full_3D', 'quasi_2D'])
+    args = parser.parse_args()
+
+    return args.dim
+
 
 def make_monomial_list(degree):
     """
@@ -62,15 +76,15 @@ def integral_expressions(idx, monomial_list):
     degree = monomial[0] + monomial[1] + monomial[2]
 
     if degree == 2:
-        return 'I2[{}] = {}{}{}exp_lambda * w[q];'.format(idx,
-                                                          'x[q] * ' * monomial[0],
-                                                          'y[q] * ' * monomial[1],
-                                                          'z[q] * ' * monomial[2])
+        return 'I2[{}] += {}{}{}exp_lambda * w[q];'.format(idx,
+                                                           'x[q] * ' * monomial[0],
+                                                           'y[q] * ' * monomial[1],
+                                                           'z[q] * ' * monomial[2])
     elif degree == 4:
-        return 'I4[{}] = {}{}{}exp_lambda * w[q];'.format(idx,
-                                                          'x[q] * ' * monomial[0],
-                                                          'y[q] * ' * monomial[1],
-                                                          'z[q] * ' * monomial[2])
+        return 'I4[{}] += {}{}{}exp_lambda * w[q];'.format(idx,
+                                                           'x[q] * ' * monomial[0],
+                                                           'y[q] * ' * monomial[1],
+                                                           'z[q] * ' * monomial[2])
     else:
         raise ValueError('Integral expression degree must be 2 or 4')
 
@@ -181,11 +195,19 @@ def jacobian_expression(m, n, monomial_list_4, monomial_list_2):
 
 def main():
 
+    dim = get_commandline_args()
+    vec_dim = 5 if dim == 'full_3D' else 3
+
     monomial_list_2 = make_monomial_list(2)
     monomial_list_4 = make_monomial_list(4)
 
+    if dim == 'quasi_2D':
+        allowed_z_powers = lambda coord_power: (coord_power[2] == 2) or (coord_power[2] == 0)
+        monomial_list_2 = list( filter(allowed_z_powers, monomial_list_2) )
+        monomial_list_4 = list( filter(allowed_z_powers, monomial_list_4) )
+
     # Print unique monomials
-    print('Ordering or monomials is:', end='\n\n')
+    print('Ordering of monomials is:', end='\n\n')
     for coord_power in monomial_list_2:
         print( '{}{}{}'.format('x'*coord_power[0],
                                'y'*coord_power[1],
@@ -206,10 +228,10 @@ def main():
 
     # Print code to calculate residual and Jacobian
     print('Residual code is:', end='\n\n')
-    for i in range(5):
+    for i in range(vec_dim):
         print( residual_expression(i, monomial_list_2) )
-    for i in range(5):
-        for j in range(5):
+    for i in range(vec_dim):
+        for j in range(vec_dim):
             print( jacobian_expression(i, j, monomial_list_4, monomial_list_2) )
 
 

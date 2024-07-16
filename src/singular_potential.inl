@@ -12,9 +12,9 @@
 namespace ball_majumdar_singular_potential
 {
 
-template <NematicDimension dim>
+template <>
 SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
-SingularPotential<dim>::
+SingularPotential<NematicDimension::full_3D>::
 SingularPotential(const unsigned int lebedev_order,
                   const double damping_parameter,
                   const double tolerance,
@@ -30,6 +30,32 @@ SingularPotential(const unsigned int lebedev_order,
 {
     if (damping_parameter > 1)
         throw std::invalid_argument("Singular potential damping parameter must be <= 1");
+
+    delta_vec = {1, 1, 0, 0, 0};
+}
+
+
+
+template <>
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
+SingularPotential<NematicDimension::quasi_2D>::
+SingularPotential(const unsigned int lebedev_order,
+                  const double damping_parameter,
+                  const double tolerance,
+                  const unsigned int maximum_iterations)
+    : damping_parameter(damping_parameter)
+    , tolerance(tolerance)
+    , maximum_iterations(maximum_iterations)
+    , quadrature_points( lebedev::get_order_enum(lebedev_order) )
+    , x(quadrature_points.get_x())
+    , y(quadrature_points.get_y())
+    , z(quadrature_points.get_z())
+    , w(quadrature_points.get_weights())
+{
+    if (damping_parameter > 1)
+        throw std::invalid_argument("Singular potential damping parameter must be <= 1");
+
+    delta_vec = {1, 1, 0};
 }
 
 
@@ -116,8 +142,8 @@ initializeInversion(const Eigen::Vector<double, QTensorShape<dim>::n_degrees_of_
 
 
 
-template<NematicDimension dim>
-void SingularPotential<dim>::
+template<>
+void SingularPotential<NematicDimension::full_3D>::
 updateResJac()
 {
     Z = 0;
@@ -201,6 +227,62 @@ updateResJac()
 
 
 
+template<>
+void SingularPotential<NematicDimension::quasi_2D>::
+updateResJac()
+{
+    Z = 0;
+    Res.setZero();
+    Jac.setZero();
+
+    I2 = {};
+    I4 = {};
+    exp_lambda = 0;
+
+	// Calculate each term in Lebedev quadrature for each integral, add to total
+	// quadrature value until we've summed all terms
+    for (std::size_t q = 0; q < w.size(); ++q)
+    {
+        exp_lambda = std::exp( Lambda(0) * (x[q] * x[q] - z[q] * z[q])
+                               + Lambda(1) * (y[q] * y[q] - z[q] * z[q])
+                               + 2 * Lambda(2) * x[q] * y[q] );
+
+        Z += exp_lambda * w[q];
+
+        I2[0] += x[q] * x[q] * exp_lambda * w[q];
+        I2[1] += x[q] * y[q] * exp_lambda * w[q];
+        I2[2] += y[q] * y[q] * exp_lambda * w[q];
+        I2[3] += z[q] * z[q] * exp_lambda * w[q];
+
+        I4[0] += x[q] * x[q] * x[q] * x[q] * exp_lambda * w[q];
+        I4[1] += x[q] * x[q] * x[q] * y[q] * exp_lambda * w[q];
+        I4[2] += x[q] * x[q] * y[q] * y[q] * exp_lambda * w[q];
+        I4[3] += x[q] * y[q] * y[q] * y[q] * exp_lambda * w[q];
+        I4[4] += y[q] * y[q] * y[q] * y[q] * exp_lambda * w[q];
+        I4[5] += x[q] * x[q] * z[q] * z[q] * exp_lambda * w[q];
+        I4[6] += x[q] * y[q] * z[q] * z[q] * exp_lambda * w[q];
+        I4[7] += y[q] * y[q] * z[q] * z[q] * exp_lambda * w[q];
+    }
+
+    Res(0) = 1 / Z * I2[0] - m(0);
+    Res(1) = 1 / Z * I2[2] - m(1);
+    Res(2) = 1 / Z * I2[1] - m(2); 
+
+    Jac(0, 0) = 1 / Z * (I4[0] - I4[5] - 1 / Z * I2[0]*(I2[0] - I2[3]));
+    Jac(0, 1) = 1 / Z * (I4[2] - I4[5] - 1 / Z * I2[0]*(I2[2] - I2[3]));
+    Jac(0, 2) = 2 / Z * (I4[1] - 1 / Z * I2[0]*I2[1]);
+    Jac(1, 0) = 1 / Z * (I4[2] - I4[7] - 1 / Z * I2[2]*(I2[0] - I2[3]));
+    Jac(1, 1) = 1 / Z * (I4[4] - I4[7] - 1 / Z * I2[2]*(I2[2] - I2[3]));
+    Jac(1, 2) = 2 / Z * (I4[3] - 1 / Z * I2[2]*I2[1]);
+    Jac(2, 0) = 1 / Z * (I4[1] - I4[6] - 1 / Z * I2[1]*(I2[0] - I2[3]));
+    Jac(2, 1) = 1 / Z * (I4[3] - I4[6] - 1 / Z * I2[1]*(I2[2] - I2[3]));
+    Jac(2, 2) = 2 / Z * (I4[2] - 1 / Z * I2[1]*I2[1]);
+
+    Jac_updated = true;
+}
+
+
+
 template <NematicDimension dim>
 void SingularPotential<dim>::
 updateVariation()
@@ -210,7 +292,7 @@ updateVariation()
 }
 
 // template class SingularPotential<NematicDimension::full_2D>;
-// template class SingularPotential<NematicDimension::quasi_2D>;
+template class SingularPotential<NematicDimension::quasi_2D>;
 template class SingularPotential<NematicDimension::full_3D>;
 
 } // ball_majumdar_singular_potential

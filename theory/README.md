@@ -40,7 +40,10 @@ Then the residual is given by:
     \mathbf m
 ```
 This is a tensorial residual because $\mathbf Q$ is a tensor.
-However, it only has 5 degrees of freedom, which we take to be as follows:
+
+### Full-$3D$ calculation
+
+In a full $3D$ calculation, the residual has 5 degrees of freedom, which we take to be as follows:
 ```math
     \mathbf Q
     =
@@ -146,3 +149,35 @@ These are handled as arrays whose indices correspond to the following monomial o
 | 12            | xzzz                  |
 | 13            | yzzz                  |
 | 14            | zzzz                  |
+
+### Quasi-$2D$ calculation
+
+For this, we take $Q_3 = Q_4 = 0$ so that we must only calculate 3 degrees of freedom.
+Our index vectors are the same as before, just truncated:
+```math
+    \mathbf i
+    =
+    \begin{bmatrix}
+    0 \\ 1 \\ 0 
+    \end{bmatrix}
+    \:\:\:\:\:\:
+    \mathbf j
+    =
+    \begin{bmatrix}
+    0 \\ 1 \\ 1 
+    \end{bmatrix}
+```
+In this case, the only integrals which involve the $z$-coordinate have $z^2$.
+This eliminates 7 of our 15 degree-4 integrals, and 2 of our degree-2 polynomials.
+The table is as follows:
+
+| Index         | Degree 4 monomial     | Degree 2 monomial |
+|---------------|-----------------------|-------------------|
+| 0             | xxxx                  | xx
+| 1             | xxxy                  | xy
+| 2             | xxyy                  | yy
+| 3             | xyyy                  | zz
+| 4             | yyyy                  | 
+| 5             | xxzz                  | 
+| 6             | xyzz                  |
+| 7             | yyzz                  |
