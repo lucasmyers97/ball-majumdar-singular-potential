@@ -66,6 +66,54 @@ private:
     const std::vector<double> &w;
 };
 
+
+
+template <>
+class SingularPotential<NematicDimension::full_2D>
+{
+public:
+    using mat = Eigen::Matrix<double, 
+                              QTensorShape<NematicDimension::full_2D>::n_degrees_of_freedom,
+                              QTensorShape<NematicDimension::full_2D>::n_degrees_of_freedom>;
+    using vec = Eigen::Vector<double, QTensorShape<NematicDimension::full_2D>::n_degrees_of_freedom>;
+    using point = Eigen::Vector<double, QTensorShape<NematicDimension::full_2D>::matrix_dimension>;
+
+    SingularPotential(const double damping_parameter,
+                      const double tolerance,
+                      const unsigned int maximum_iterations);
+
+    unsigned int invert_Q(const vec &Q_in);
+    double return_Z() const;
+    vec return_Lambda() const;
+    mat return_Jacobian() const;
+
+private:
+    void initializeInversion(const vec &Q_in);
+    void updateResJac();
+    void updateVariation();
+
+    const double damping_parameter;
+    const double tolerance;
+    const unsigned int maximum_iterations;
+
+    bool inverted = false;
+    bool Jac_updated = false;
+
+    vec delta_vec;
+    vec m;
+    vec Q;
+    vec Lambda;
+
+    vec Res;
+    mat Jac;
+    vec dLambda;
+    double Z = 0;
+
+    double I0;
+    double I1;
+    double norm;
+};
+
 } // ball_majumdar_singular_potential
 
 #endif

@@ -2,6 +2,14 @@
 
 ## Numerical inversion of singular potential
 
+We note that the definition of the $Q$-tensor is given by:
+```math
+\mathbf Q
+=
+\int_{S^2} \left(\mathbf u \otimes \mathbf u \right) \rho \left( \mathbf u \right) dS\left(\mathbf u\right)
+- \frac13 \mathbf I
+```
+
 Upon locally maximizing the entropy density, one arrives at the following expression for the molecular orientation probability density function:
 ```math
     \rho(\mathbf{u})
@@ -25,6 +33,12 @@ Then the $Q$-tensor is given by:
     \left( \mathbf u \otimes \mathbf u \right)
     \exp \left[ \boldsymbol \Lambda : \left( \mathbf u \otimes \mathbf u \right) \right]
     dS
+```
+Note also that we may write it as:
+```math
+\mathbf Q + \frac13 \mathbf I
+=
+\frac{\partial \log Z}{\partial \boldsymbol \Lambda}
 ```
 For ease of notation, call $\mathbf m = \mathbf Q + \tfrac13 \mathbf I$.
 Then the residual is given by:
@@ -181,3 +195,86 @@ The table is as follows:
 | 5             | xxzz                  | 
 | 6             | xyzz                  |
 | 7             | yyzz                  |
+
+### Full-2D Calculation
+
+In this case we have 2 degrees of freedom:
+```math
+\mathbf Q
+=
+\begin{bmatrix}
+    Q_0 &Q_1 \\
+    Q_1 &-Q_0
+\end{bmatrix}
+```
+This gives:
+```math
+Z
+=
+\int_{S^1}
+\exp \left[ \Lambda_0 \left( x^2 - y^2 \right) + 2 \Lambda_1 xy \right]
+dS
+```
+Writing this in terms of polar coordinates gives:
+```math
+\begin{split}
+Z
+&=
+\int_0^{2\pi} \exp \left[ \Lambda_0 \left( \cos^2 \theta - \sin^2 \theta \right) + 2 \Lambda_1 \sin\theta \cos\theta \right] d\theta \\
+&=
+\int_0^{2\pi} \exp \left[ \Lambda_0 \cos 2 \theta + \Lambda_1 \sin 2 \theta \right] d\theta \\
+&=
+\frac12 \int_0^{\pi} \exp \left[ \Lambda_0 \cos \theta + \Lambda_1 \sin \theta \right] d\theta \\
+&=
+2 \pi I_0 \left( \sqrt{\Lambda_0^2 + \Lambda_1^2} \right)
+\end{split}
+```
+where $I_n(z)$ is the modified Bessel function of the first kind, and this was calculated with Mathematica.
+From this point on we'll call $I_n(\sqrt{\Lambda_0^2 + \Lambda_1^2}) = I_n$.
+From above, we have that:
+```math
+\begin{split}
+    Q_0
+    &=
+    \frac{1}{Z}
+    \frac{\partial Z}{\partial \Lambda_0}
+    -
+    \frac12 \\
+    Q_1
+    &=
+    \frac{1}{Z}
+    \frac{\partial Z}{\partial \Lambda_1}
+\end{split}
+```
+Explicitly:
+```math
+\begin{split}
+    Q_0
+    &=
+    \frac{1}{Z}
+    \frac{2 \pi \Lambda_{0} I_{1}}{\sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}}}
+    - \frac12 \\
+    Q_1
+    &=
+    \frac{1}{Z}
+    \frac{2 \pi \Lambda_{1} I_{1}}{\sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}}}
+\end{split}
+```
+Additionally, we may calculate the Jacobian:
+```math
+\begin{split}
+    \frac{\partial Q_0}{\partial \Lambda_0}
+    &=
+    \frac{I_{0}^{2} \Lambda_{0}^{4} + I_{0}^{2} \Lambda_{0}^{2} \Lambda_{1}^{2} - I_{0} I_{1} \Lambda_{0}^{2} \sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}} + I_{0} I_{1} \Lambda_{1}^{2} \sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}} - I_{1}^{2} \Lambda_{0}^{4} - I_{1}^{2} \Lambda_{0}^{2} \Lambda_{1}^{2}}{I_{0}^{2} \left(\Lambda_{0}^{2} + \Lambda_{1}^{2}\right)^{2}} \\
+    \frac{\partial Q_1}{\partial \Lambda_0}
+    &=
+    \frac{\Lambda_{0} \Lambda_{1} \left(I_{0}^{2} \sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}} - 2 I_{0} I_{1} - I_{1}^{2} \sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}}\right)}{I_{0}^{2} \left(\Lambda_{0}^{2} + \Lambda_{1}^{2}\right)^{\frac{3}{2}}} \\
+    \frac{\partial Q_0}{\partial \Lambda_1}
+    &=
+    \frac{\Lambda_{0} \Lambda_{1} \left(I_{0}^{2} \sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}} - 2 I_{0} I_{1} - I_{1}^{2} \sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}}\right)}{I_{0}^{2} \left(\Lambda_{0}^{2} + \Lambda_{1}^{2}\right)^{\frac{3}{2}}} \\
+    \frac{\partial Q_1}{\partial \Lambda_1}
+    &=
+    \frac{I_{0}^{2} \Lambda_{0}^{2} \Lambda_{1}^{2} + I_{0}^{2} \Lambda_{1}^{4} + I_{0} I_{1} \Lambda_{0}^{2} \sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}} - I_{0} I_{1} \Lambda_{1}^{2} \sqrt{\Lambda_{0}^{2} + \Lambda_{1}^{2}} - I_{1}^{2} \Lambda_{0}^{2} \Lambda_{1}^{2} - I_{1}^{2} \Lambda_{1}^{4}}{I_{0}^{2} \left(\Lambda_{0}^{2} + \Lambda_{1}^{2}\right)^{2}}
+\end{split}
+```
+Given this, we may run Newton's method to find $\boldsymbol \Lambda$.

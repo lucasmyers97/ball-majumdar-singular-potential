@@ -60,10 +60,37 @@ SingularPotential(const unsigned int lebedev_order,
 
 
 
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
+SingularPotential<NematicDimension::full_2D>::
+SingularPotential(const double damping_parameter,
+                  const double tolerance,
+                  const unsigned int maximum_iterations)
+    : damping_parameter(damping_parameter)
+    , tolerance(tolerance)
+    , maximum_iterations(maximum_iterations)
+{
+    if (damping_parameter > 1)
+        throw std::invalid_argument("Singular potential damping parameter must be <= 1");
+
+    delta_vec = {1, 0};
+}
+
+
+
 template <NematicDimension dim>
 SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 Eigen::Vector<double, QTensorShape<dim>::n_degrees_of_freedom>
 SingularPotential<dim>::
+return_Lambda() const
+{
+    return Lambda;
+}
+
+
+
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
+Eigen::Vector<double, QTensorShape<NematicDimension::full_2D>::n_degrees_of_freedom>
+SingularPotential<NematicDimension::full_2D>::
 return_Lambda() const
 {
     return Lambda;
@@ -84,9 +111,30 @@ return_Jacobian() const
 
 
 
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
+Eigen::Matrix<double, 
+              QTensorShape<NematicDimension::full_2D>::n_degrees_of_freedom,
+              QTensorShape<NematicDimension::full_2D>::n_degrees_of_freedom>
+SingularPotential<NematicDimension::full_2D>::
+return_Jacobian() const
+{
+    return Jac;
+}
+
+
+
 template <NematicDimension dim>
 SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 double SingularPotential<dim>::
+return_Z() const
+{
+    return Z;
+}
+
+
+
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
+double SingularPotential<NematicDimension::full_2D>::
 return_Z() const
 {
     return Z;
@@ -98,6 +146,30 @@ template <NematicDimension dim>
 SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 unsigned int SingularPotential<dim>::
 invert_Q(const Eigen::Vector<double, QTensorShape<dim>::n_degrees_of_freedom> &Q_in)
+{
+    // TODO: add flag to reinitialize SingularPotential or not
+    // TODO: figure out how to reuse Jacobian easily
+    initializeInversion(Q_in);
+
+    // Run Newton's method until residual < tolerance or reach max iterations
+    for (unsigned int iter = 0; iter < maximum_iterations; ++iter)
+    {
+        if (Res.norm() < tolerance)
+            return iter;
+
+        this->updateVariation();
+        Lambda -= damping_parameter * dLambda;
+        this->updateResJac();
+    }
+
+    throw std::runtime_error("Did not calculate singular potential in under maximum iterations");
+}
+
+
+
+SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
+unsigned int SingularPotential<NematicDimension::full_2D>::
+invert_Q(const Eigen::Vector<double, QTensorShape<NematicDimension::full_2D>::n_degrees_of_freedom> &Q_in)
 {
     // TODO: add flag to reinitialize SingularPotential or not
     // TODO: figure out how to reuse Jacobian easily
@@ -138,6 +210,24 @@ initializeInversion(const Eigen::Vector<double, QTensorShape<dim>::n_degrees_of_
             else
                 Jac(i, j) = 0;
         }
+}
+
+
+
+void SingularPotential<NematicDimension::full_2D>::
+initializeInversion(const Eigen::Vector<double, QTensorShape<NematicDimension::full_2D>::n_degrees_of_freedom> &Q_in)
+{
+    inverted = false;
+
+    m = Q_in + (1.0 / 2.0) * delta_vec;
+    Lambda.setZero();
+    Res = -Q_in; // can explicitly compute for Lambda = 0
+
+    // for Jacobian, compute 0.5 on diagonal, 0 elsewhere for Lambda = 0
+    Jac(0, 0) = 0.5;
+    Jac(1, 1) = 0.5;
+    Jac(1, 0) = 0.0;
+    Jac(0, 1) = 0.0;
 }
 
 
@@ -283,8 +373,47 @@ updateResJac()
 
 
 
+void SingularPotential<NematicDimension::full_2D>::
+updateResJac()
+{
+    norm = Lambda.norm();
+    I0 = std::cyl_bessel_i(0, norm);
+    I1 = std::cyl_bessel_i(1, norm);
+
+    Z = 2*M_PI * I0;
+
+    Res(0) = I1 * Lambda(0) / (I0 * norm) - m(0);
+    Res(1) = I1 * Lambda(1) / (I0 * norm) - m(1);
+
+    double L0sq = Lambda(0) * Lambda(0);
+    double L1sq = Lambda(1) * Lambda(1);
+    double denom1 = I0 * I0 * norm * norm * norm *norm;
+    double denom2 = I0 * I0 * norm * norm * norm;
+    Jac(0, 0) = (I0*I0 * L0sq*L0sq + I0*I0*L0sq*L1sq
+                 - I0*I1*L0sq*norm + I0*I1*L1sq*norm
+                 - I1*I1*L0sq*L0sq - I1*I1*L0sq*L1sq) / denom1;
+    Jac(1, 0) = Lambda(0)*Lambda(1) * (I0*I0*norm - 2*I0*I1 - I1*I1 * norm) / denom2;
+    Jac(0, 1) = Jac(1, 0);
+    Jac(1, 1) = (I0*I0*L1sq + I0*I0*L1sq*L1sq 
+                 + I0*I1*L0sq*norm - I0*I1*L1sq*norm
+                 - I1*I1*L0sq*L1sq - I1*I1*L1sq*L1sq) / denom1;
+
+    Jac_updated = true;
+}
+
+
+
 template <NematicDimension dim>
 void SingularPotential<dim>::
+updateVariation()
+{
+    dLambda = Jac.householderQr().solve(Res);
+    Jac_updated = false; // Can't use Jac when it's factorized
+}
+
+
+
+void SingularPotential<NematicDimension::full_2D>::
 updateVariation()
 {
     dLambda = Jac.householderQr().solve(Res);
