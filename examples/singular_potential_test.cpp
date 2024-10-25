@@ -25,10 +25,13 @@ int main()
                                                     tolerance,
                                                     maximum_iterations);
 
-    vec Q = {1.0 / 3.0, -1.0 / 6.0, 0.0, 0.0, 0.0};
+    // vec Q = {1.0 / 3.0, -1.0 / 6.0, 0.0, 0.0, 0.0};
+    // vec Q = {-0.22503333, 4.1337954e-17, 0.0, 0.45006666, 0.0};
+    vec Q = {-2.2503333e-01,  4.5006666e-01,  4.1337954e-17,  0.0000000e+00, 0.0000000e+00};
 
     singular_potential.invert_Q(Q);
     auto Lambda = singular_potential.return_Lambda();
+    auto Z = singular_potential.return_Z();
 
     bmsp::SingularPotential<dim2> singular_potential2(lebedev_order,
                                                       damping_parameter,
@@ -49,6 +52,7 @@ int main()
     singular_potential3.invert_Q(Q3);
     auto Lambda3 = singular_potential3.return_Lambda();
 
+    std::cout << Z << std::endl;
     std::cout << Lambda << std::endl;
     std::cout << "\n" << std::endl;
     std::cout << Lambda2 << std::endl;

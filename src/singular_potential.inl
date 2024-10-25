@@ -128,7 +128,7 @@ SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 double SingularPotential<dim>::
 return_Z() const
 {
-    return Z;
+    return 4 * M_PI * Z;
 }
 
 
@@ -137,7 +137,7 @@ SINGULAR_POTENTIAL_EXTERNAL_LINKAGE
 double SingularPotential<NematicDimension::full_2D>::
 return_Z() const
 {
-    return Z;
+    return 4 * M_PI * Z;
 }
 
 
